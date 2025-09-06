@@ -32,31 +32,58 @@ jobs:
           MATRIX_NAME=${{ matrix.branch.name }}
           REGEX="^${MATRIX_NAME//\*/.*}$"
 
+          RESULT_FILE=result.txt
+
           if [[ "$BRANCH_NAME" =~ $REGEX ]]; then
-            echo "skip=false" >> $GITHUB_ENV
+            # 後続が実行される → 成功/失敗は後で判定
+            echo "matched" > $RESULT_FILE
           else
+            echo "⏭️ $BRANCH_NAME did NOT match ${MATRIX_NAME} → skipped" > $RESULT_FILE
             echo "skip=true" >> $GITHUB_ENV
-            echo "⏭️ Branch '$BRANCH_NAME' did NOT match '${MATRIX_NAME}' → skipped" >> $GITHUB_STEP_SUMMARY
-            # 即終了（成功扱い）
             exit 0
           fi
 
-      - name: Step 1
-        if: env.skip != 'true'
-        run: echo "Doing something..."
-
-      - name: Step 2
+      - name: Some task
         if: env.skip != 'true'
         run: |
-          echo "Another task"
-          # サンプル: わざと失敗させたい場合は以下を有効化
-          # exit 1
+          echo "Running tasks..."
+          # exit 1  # ← 失敗ケースを試したいなら有効化
 
-      - name: Report result
-        if: env.skip != 'true'
+      - name: Save result
+        if: always()   # 成功/失敗に関わらず実行
         run: |
-          if [ "${{ job.status }}" = "success" ]; then
-            echo "✅ Branch '${GITHUB_REF_NAME}' matched '${{ matrix.branch.name }}' → success" >> $GITHUB_STEP_SUMMARY
+          RESULT_FILE=result.txt
+          if [ "${{ env.skip }}" = "true" ]; then
+            # すでに書かれているので何もしない
+            :
           else
-            echo "❌ Branch '${GITHUB_REF_NAME}' matched '${{ matrix.branch.name }}' → failed" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ job.status }}" = "success" ]; then
+              echo "✅ ${GITHUB_REF_NAME} matched ${{ matrix.branch.name }} → success" > $RESULT_FILE
+            else
+              echo "❌ ${GITHUB_REF_NAME} matched ${{ matrix.branch.name }} → failed" > $RESULT_FILE
+            fi
           fi
+
+      - name: Upload result artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.branch.name }}
+          path: result.txt
+
+  summarize:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download all results
+        uses: actions/download-artifact@v4
+        with:
+          path: results
+
+      - name: Generate summary
+        run: |
+          echo "## Matrix Results" >> $GITHUB_STEP_SUMMARY
+          for file in results/*/result.txt; do
+            cat "$file" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          done
