@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch:
+          - name: 'main'
+            production: true
+            note: 'foo'
+          - name: 'feature/*'
+            production: false
+            note: 'bar'
+          - name: 'develop'
+            production: true
+            note: 'baz'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Conditional skip
+        id: check_branch
+        run: |
+          BRANCH_NAME=${GITHUB_REF_NAME}
+          MATRIX_NAME=${{ matrix.branch.name }}
+
+          # ワイルドカード対応
+          REGEX="^${MATRIX_NAME//\*/.*}$"
+
+          if ! [[ "$BRANCH_NAME" =~ $REGEX ]]; then
+            echo "Branch does not match matrix. Skipping remaining steps..."
+            echo "skip=true" >> $GITHUB_ENV
+            exit 0
+          fi
+
+      - name: Step 1
+        if: env.skip != 'true'
+        run: echo "This runs only if the branch matches matrix"
+
+      - name: Step 2
+        if: env.skip != 'true'
+        run: echo "Another step that runs only if branch matches matrix"
