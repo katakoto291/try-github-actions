@@ -109,17 +109,3 @@ jobs:
             cat "$file" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
           done
-
-
-
-  call-prod:
-    needs: build
-    uses: ./.github/workflows/prod.yml
-    with:
-      branch: 'aaa'
-
-  call-dev:
-    needs: build
-    uses: ./.github/workflows/dev.yml
-    with:
-      branch: 'bbb'
