@@ -51,18 +51,18 @@ jobs:
           fi
           echo "✅ Workflow file exists"
 
-      # production の値でワークフロー呼び出しを切替
-      - name: Call Production Workflow
-        if: env.skip != 'true' && matrix.branch.production == true
-        uses: ./.github/workflows/prod.yml@main
-        with:
-          branch: ${{ matrix.branch.name }}
-
-      - name: Call Development Workflow
-        if: env.skip != 'true' && matrix.branch.production == false
-        uses: ./.github/workflows/dev.yml@main
-        with:
-          branch: ${{ matrix.branch.name }}
+#      # production の値でワークフロー呼び出しを切替
+#      - name: Call Production Workflow
+#        if: env.skip != 'true' && matrix.branch.production == true
+#        uses: ./.github/workflows/prod.yml@main
+#        with:
+#          branch: ${{ matrix.branch.name }}
+#
+#      - name: Call Development Workflow
+#        if: env.skip != 'true' && matrix.branch.production == false
+#        uses: ./.github/workflows/dev.yml@main
+#        with:
+#          branch: ${{ matrix.branch.name }}
 
       - name: Save result
         if: always()
@@ -109,3 +109,19 @@ jobs:
             cat "$file" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
           done
+
+
+
+  call-prod:
+    if: needs.build.result == 'success' && matrix.branch.production == true
+    needs: build
+    uses: ./.github/workflows/prod.yml
+    with:
+      branch: ${{ matrix.branch.name }}
+
+  call-dev:
+    if: needs.build.result == 'success' && matrix.branch.production == false
+    needs: build
+    uses: ./.github/workflows/dev.yml
+    with:
+      branch: ${{ matrix.branch.name }}
