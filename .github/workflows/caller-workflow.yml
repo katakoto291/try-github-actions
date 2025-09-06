@@ -1,11 +1,18 @@
-# .github/workflows/caller-workflow.yml
 name: Caller Workflow
 
 on:
   push:
+    branches:
+      - main
 
 jobs:
   call_another_workflow:
-    uses: ./.github/workflows/called-workflow.yml
-    with:
-      message: "Hello from the caller workflow!"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        message: ["Hello", "Hi", "Greetings"]
+    steps:
+      - name: Call the other workflow
+        uses: ./.github/workflows/called-workflow.yml
+        with:
+          message: ${{ matrix.message }}
