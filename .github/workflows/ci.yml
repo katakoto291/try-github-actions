@@ -60,7 +60,7 @@ jobs:
 
       - name: Call Development Workflow
         if: env.skip != 'true' && matrix.branch.production == false
-        uses: ./.github/workflows/dev.yml
+        uses: ./.github/workflows/dev.yml@main
         with:
           branch: ${{ matrix.branch.name }}
 
