@@ -1,0 +1,11 @@
+# .github/workflows/caller-workflow.yml
+name: Caller Workflow
+
+on:
+  push:
+
+jobs:
+  call_another_workflow:
+    uses: ./.github/workflows/called-workflow.yml
+    with:
+      message: "Hello from the caller workflow!"
