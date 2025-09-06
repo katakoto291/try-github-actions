@@ -1,16 +1,15 @@
+# .github/workflows/caller-workflow.yml
 name: Caller Workflow
 
 on:
-  push:
-    branches:
-      - main
+  push:  # branches を指定しない → 全ブランチで実行
 
 jobs:
-  call_another_workflow:
+  call_matrix_workflow:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        message: ["Hello", "Hi", "Greetings"]
+        message: ["Hello", "Hi", "Greetings"]  # pushごとに3回呼び出す
     steps:
       - name: Call the other workflow
         uses: ./.github/workflows/called-workflow.yml
