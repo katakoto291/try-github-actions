@@ -6,16 +6,23 @@ on:
     branches:
       - main
       - develop
-      - feature/*  # feature ブランチも対象
+      - feature/*
 
 jobs:
-  call_matrix_workflow:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        message: ["Hello", "Hi", "Greetings"]  # matrixの値
-    steps:
-      - name: Call the other workflow
-        uses: ./.github/workflows/called-workflow.yml
-        with:
-          message: ${{ matrix.message }}
+  call_workflow_hello:
+    uses: ./.github/workflows/called-workflow.yml
+    with:
+      message: "Hello from ${{ github.ref_name }}"
+    if: always()  # 例として常に実行
+
+  call_workflow_hi:
+    uses: ./.github/workflows/called-workflow.yml
+    with:
+      message: "Hi from ${{ github.ref_name }}"
+    if: always()
+
+  call_workflow_greetings:
+    uses: ./.github/workflows/called-workflow.yml
+    with:
+      message: "Greetings from ${{ github.ref_name }}"
+    if: always()
