@@ -30,22 +30,33 @@ jobs:
         run: |
           BRANCH_NAME=${GITHUB_REF_NAME}
           MATRIX_NAME=${{ matrix.branch.name }}
-
-          # ワイルドカード対応
           REGEX="^${MATRIX_NAME//\*/.*}$"
 
           if [[ "$BRANCH_NAME" =~ $REGEX ]]; then
             echo "skip=false" >> $GITHUB_ENV
-            echo "✅ Branch '$BRANCH_NAME' matched matrix '${MATRIX_NAME}'" >> $GITHUB_STEP_SUMMARY
           else
             echo "skip=true" >> $GITHUB_ENV
-            echo "⏭️ Branch '$BRANCH_NAME' did NOT match matrix '${MATRIX_NAME}', skipped." >> $GITHUB_STEP_SUMMARY
+            echo "⏭️ Branch '$BRANCH_NAME' did NOT match '${MATRIX_NAME}' → skipped" >> $GITHUB_STEP_SUMMARY
+            # 即終了（成功扱い）
+            exit 0
           fi
 
       - name: Step 1
         if: env.skip != 'true'
-        run: echo "This runs only if the branch matches matrix"
+        run: echo "Doing something..."
 
       - name: Step 2
         if: env.skip != 'true'
-        run: echo "Another step that runs only if branch matches matrix"
+        run: |
+          echo "Another task"
+          # サンプル: わざと失敗させたい場合は以下を有効化
+          # exit 1
+
+      - name: Report result
+        if: env.skip != 'true'
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Branch '${GITHUB_REF_NAME}' matched '${{ matrix.branch.name }}' → success" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Branch '${GITHUB_REF_NAME}' matched '${{ matrix.branch.name }}' → failed" >> $GITHUB_STEP_SUMMARY
+          fi
