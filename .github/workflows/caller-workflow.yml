@@ -2,13 +2,20 @@
 name: Caller Workflow
 
 on:
-  push:  # branches を指定しない → 全ブランチ対象
+  push:
+    branches:
+      - main
+      - develop
+      - feature/*  # feature ブランチも対象
 
 jobs:
-  call_workflow:
+  call_matrix_workflow:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        message: ["Hello", "Hi", "Greetings"]  # matrixの値
     steps:
       - name: Call the other workflow
         uses: ./.github/workflows/called-workflow.yml
         with:
-          message: "Hello from push on branch ${{ github.ref_name }}"
+          message: ${{ matrix.message }}
