@@ -54,7 +54,7 @@ jobs:
       # production の値でワークフロー呼び出しを切替
       - name: Call Production Workflow
         if: env.skip != 'true' && matrix.branch.production == true
-        uses: ./.github/workflows/prod.yml
+        uses: ./.github/workflows/prod.yml@main
         with:
           branch: ${{ matrix.branch.name }}
 
