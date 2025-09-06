@@ -41,19 +41,18 @@ jobs:
             echo "${{ matrix.branch.name }} | skipped | -" > $RESULT_FILE
           fi
 
-      # production=true 用のタスク
-      - name: Production task
+      # production の値でワークフロー呼び出しを切替
+      - name: Call Production Workflow
         if: env.skip != 'true' && matrix.branch.production == true
-        run: |
-          echo "Running production task..."
-          # exit 1  # ← 失敗させたいとき用
+        uses: ./.github/workflows/prod.yml
+        with:
+          branch: ${{ matrix.branch.name }}
 
-      # production=false 用のタスク
-      - name: Non-production task
+      - name: Call Development Workflow
         if: env.skip != 'true' && matrix.branch.production == false
-        run: |
-          echo "Running non-production task..."
-          # exit 1  # ← 失敗させたいとき用
+        uses: ./.github/workflows/dev.yml
+        with:
+          branch: ${{ matrix.branch.name }}
 
       - name: Save result
         if: always()
