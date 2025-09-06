@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Conditional skip
+      - name: Conditional check
         id: check_branch
         run: |
           BRANCH_NAME=${GITHUB_REF_NAME}
@@ -34,10 +34,12 @@ jobs:
           # ワイルドカード対応
           REGEX="^${MATRIX_NAME//\*/.*}$"
 
-          if ! [[ "$BRANCH_NAME" =~ $REGEX ]]; then
-            echo "Branch does not match matrix. Skipping remaining steps..."
+          if [[ "$BRANCH_NAME" =~ $REGEX ]]; then
+            echo "skip=false" >> $GITHUB_ENV
+            echo "✅ Branch '$BRANCH_NAME' matched matrix '${MATRIX_NAME}'" >> $GITHUB_STEP_SUMMARY
+          else
             echo "skip=true" >> $GITHUB_ENV
-            exit 0
+            echo "⏭️ Branch '$BRANCH_NAME' did NOT match matrix '${MATRIX_NAME}', skipped." >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Step 1
