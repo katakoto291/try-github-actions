@@ -41,6 +41,16 @@ jobs:
             echo "${{ matrix.branch.name }} | skipped | -" > $RESULT_FILE
           fi
 
+      - name: Check workflow file exists
+        run: |
+          WF_PATH="./.github/workflows/prod.yml"
+          echo "Checking if $WF_PATH exists..."
+          if [ ! -f "$WF_PATH" ]; then
+            echo "❌ Workflow file does not exist at $WF_PATH"
+            exit 1
+          fi
+          echo "✅ Workflow file exists"
+
       # production の値でワークフロー呼び出しを切替
       - name: Call Production Workflow
         if: env.skip != 'true' && matrix.branch.production == true
