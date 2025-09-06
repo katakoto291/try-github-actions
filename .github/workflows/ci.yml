@@ -41,11 +41,19 @@ jobs:
             echo "${{ matrix.branch.name }} | skipped | -" > $RESULT_FILE
           fi
 
-      - name: Some task
-        if: env.skip != 'true'
+      # production=true 用のタスク
+      - name: Production task
+        if: env.skip != 'true' && matrix.branch.production == true
         run: |
-          echo "Running tasks..."
-          # exit 1  # ← わざと失敗するならコメント解除
+          echo "Running production task..."
+          # exit 1  # ← 失敗させたいとき用
+
+      # production=false 用のタスク
+      - name: Non-production task
+        if: env.skip != 'true' && matrix.branch.production == false
+        run: |
+          echo "Running non-production task..."
+          # exit 1  # ← 失敗させたいとき用
 
       - name: Save result
         if: always()
@@ -57,7 +65,7 @@ jobs:
             if [ "${{ job.status }}" = "success" ]; then
               echo "${{ matrix.branch.name }} | success | ✅" > $RESULT_FILE
             else
-              echo "${{ matrix.branch.name }} | failed | ❌" > $RESULT_FILE
+              echo "${{ matrix.branch.name }} | failed  | ❌" > $RESULT_FILE
             fi
           fi
 
@@ -86,8 +94,8 @@ jobs:
         run: |
           echo "## Matrix Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Branch | Status | Note |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | Status   | Note |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|----------|------|" >> $GITHUB_STEP_SUMMARY
           for file in results/*/result.txt; do
             cat "$file" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
