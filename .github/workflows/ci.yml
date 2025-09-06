@@ -35,32 +35,29 @@ jobs:
           RESULT_FILE=result.txt
 
           if [[ "$BRANCH_NAME" =~ $REGEX ]]; then
-            # 後続が実行される → 成功/失敗は後で判定
-            echo "matched" > $RESULT_FILE
+            echo "skip=false" >> $GITHUB_ENV
           else
-            echo "⏭️ $BRANCH_NAME did NOT match ${MATRIX_NAME} → skipped" > $RESULT_FILE
             echo "skip=true" >> $GITHUB_ENV
-            exit 0
+            echo "${{ matrix.branch.name }} | skipped | -" > $RESULT_FILE
           fi
 
       - name: Some task
         if: env.skip != 'true'
         run: |
           echo "Running tasks..."
-          # exit 1  # ← 失敗ケースを試したいなら有効化
+          # exit 1  # ← わざと失敗するならコメント解除
 
       - name: Save result
-        if: always()   # 成功/失敗に関わらず実行
+        if: always()
         run: |
           RESULT_FILE=result.txt
           if [ "${{ env.skip }}" = "true" ]; then
-            # すでに書かれているので何もしない
             :
           else
             if [ "${{ job.status }}" = "success" ]; then
-              echo "✅ ${GITHUB_REF_NAME} matched ${{ matrix.branch.name }} → success" > $RESULT_FILE
+              echo "${{ matrix.branch.name }} | success | ✅" > $RESULT_FILE
             else
-              echo "❌ ${GITHUB_REF_NAME} matched ${{ matrix.branch.name }} → failed" > $RESULT_FILE
+              echo "${{ matrix.branch.name }} | failed | ❌" > $RESULT_FILE
             fi
           fi
 
@@ -88,6 +85,9 @@ jobs:
       - name: Generate summary
         run: |
           echo "## Matrix Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | Status | Note |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|------|" >> $GITHUB_STEP_SUMMARY
           for file in results/*/result.txt; do
             cat "$file" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
