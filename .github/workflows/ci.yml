@@ -51,18 +51,18 @@ jobs:
           fi
           echo "✅ Workflow file exists"
 
-#      # production の値でワークフロー呼び出しを切替
-#      - name: Call Production Workflow
-#        if: env.skip != 'true' && matrix.branch.production == true
-#        uses: ./.github/workflows/prod.yml@main
-#        with:
-#          branch: ${{ matrix.branch.name }}
-#
-#      - name: Call Development Workflow
-#        if: env.skip != 'true' && matrix.branch.production == false
-#        uses: ./.github/workflows/dev.yml@main
-#        with:
-#          branch: ${{ matrix.branch.name }}
+      # production の値でワークフロー呼び出しを切替
+      - name: Call Production Workflow
+        if: env.skip != 'true' && matrix.branch.production == true
+        uses: ./.github/actions/prod
+        with:
+          branch: ${{ matrix.branch.name }}
+
+      - name: Call Development Workflow
+        if: env.skip != 'true' && matrix.branch.production == false
+        uses: ./.github/actions/dev
+        with:
+          branch: ${{ matrix.branch.name }}
 
       - name: Save result
         if: always()

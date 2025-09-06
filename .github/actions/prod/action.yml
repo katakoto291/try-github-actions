@@ -1,0 +1,17 @@
+name: "Production Action"
+description: "Deploy to production"
+
+inputs:
+  branch:
+    description: "Target branch"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Run production job
+      shell: bash
+      run: echo "Running PROD action for ${{ inputs.branch }}"
