@@ -113,15 +113,13 @@ jobs:
 
 
   call-prod:
-    if: needs.build.result == 'success' && matrix.branch.production == true
     needs: build
     uses: ./.github/workflows/prod.yml
     with:
-      branch: ${{ matrix.branch.name }}
+      branch: 'aaa'
 
   call-dev:
-    if: needs.build.result == 'success' && matrix.branch.production == false
     needs: build
     uses: ./.github/workflows/dev.yml
     with:
-      branch: ${{ matrix.branch.name }}
+      branch: 'bbb'
