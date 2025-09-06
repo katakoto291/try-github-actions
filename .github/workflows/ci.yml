@@ -64,11 +64,16 @@ jobs:
             fi
           fi
 
+      - name: Sanitize artifact name
+        run: |
+          SAFE_NAME=$(echo "${{ matrix.branch.name }}" | sed 's#[^a-zA-Z0-9._-]#_#g')
+          echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
+
       - name: Upload result artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: results-${{ matrix.branch.name }}
+          name: results-${{ env.SAFE_NAME }}
           path: result.txt
 
   summarize:
