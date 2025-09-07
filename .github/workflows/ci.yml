@@ -5,97 +5,14 @@ on:
   push:
 
 jobs:
-  build:
+  feature-job:
+    if: startsWith(github.ref, 'refs/heads/feature/')
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        branch:
-          - name: 'main'
-            production: true
-            note: 'foo'
-          - name: 'feature/*'
-            production: false
-            note: 'bar'
-          - name: 'develop'
-            production: true
-            note: 'baz'
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - run: echo "✅ This runs only on feature/* branches"
 
-      - name: Conditional check
-        id: check_branch
-        run: |
-          BRANCH_NAME=${GITHUB_REF_NAME}
-          MATRIX_NAME=${{ matrix.branch.name }}
-          REGEX="^${MATRIX_NAME//\*/.*}$"
-
-          RESULT_FILE=result.txt
-
-          if [[ "$BRANCH_NAME" =~ $REGEX ]]; then
-            echo "skip=false" >> $GITHUB_ENV
-          else
-            echo "skip=true" >> $GITHUB_ENV
-            echo "${{ matrix.branch.name }} | skipped | -" > $RESULT_FILE
-          fi
-
-      # production の値でワークフロー呼び出しを切替
-      - name: Call Production Workflow
-        if: env.skip != 'true' && matrix.branch.production == true
-        uses: ./.github/actions/prod
-        with:
-          branch: ${{ matrix.branch.name }}
-
-      - name: Call Development Workflow
-        if: env.skip != 'true' && matrix.branch.production == false
-        uses: ./.github/actions/dev
-        with:
-          branch: ${{ matrix.branch.name }}
-
-      - name: Save result
-        if: always()
-        run: |
-          RESULT_FILE=result.txt
-          if [ "${{ env.skip }}" = "true" ]; then
-            :
-          else
-            if [ "${{ job.status }}" = "success" ]; then
-              echo "${{ matrix.branch.name }} | success | ✅" > $RESULT_FILE
-            else
-              echo "${{ matrix.branch.name }} | failed  | ❌" > $RESULT_FILE
-            fi
-          fi
-
-      - name: Sanitize artifact name
-        run: |
-          SAFE_NAME=$(echo "${{ matrix.branch.name }}" | sed 's#[^a-zA-Z0-9._-]#_#g')
-          echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
-
-      - name: Upload result artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: results-${{ env.SAFE_NAME }}
-          path: result.txt
-
-  summarize:
+  main-job:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs: build
     steps:
-      - name: Download all results
-        uses: actions/download-artifact@v4
-        with:
-          path: results
-
-      - name: Generate summary
-        run: |
-          echo "## Matrix Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Branch | Status   | Note |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|----------|------|" >> $GITHUB_STEP_SUMMARY
-          for file in results/*/result.txt; do
-            cat "$file" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          done
+      - run: echo "🚀 This runs only on main branch"
