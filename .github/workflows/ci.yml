@@ -9,10 +9,16 @@ jobs:
     if: startsWith(github.ref, 'refs/heads/feature/')
     runs-on: ubuntu-latest
     steps:
-      - run: echo "✅ This runs only on feature/* branches"
+      - name: Deploy to Development
+        uses: ./.github/workflows/dev.yml
+        with:
+          branch: ${{ matrix.branch.name }}
 
   main-job:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🚀 This runs only on main branch"
+      - name: Deploy to Production
+        uses: ./.github/workflows/prod.yml
+        with:
+          branch: ${{ matrix.branch.name }}
