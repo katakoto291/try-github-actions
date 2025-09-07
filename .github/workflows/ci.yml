@@ -7,18 +7,12 @@ on:
 jobs:
   feature-job:
     if: startsWith(github.ref, 'refs/heads/feature/')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to Development
-        uses: ./.github/workflows/dev.yml
-        with:
-          branch: ${{ matrix.branch.name }}
+    uses: ./.github/workflows/dev.yml
+    with:
+      branch: ${{ matrix.branch.name }}
 
   main-job:
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to Production
-        uses: ./.github/workflows/prod.yml
-        with:
-          branch: ${{ matrix.branch.name }}
+    uses: ./.github/workflows/prod.yml
+    with:
+      branch: ${{ matrix.branch.name }}
